@@ -1,0 +1,112 @@
+<!-- Template page: This settings page offers various input field to gather settings information -->
+
+{% extends "masterPage.html" %}
+
+{% block content %}
+<div class="row">
+        
+        <!-- Left Rail -->
+        <!-- Menu element-->
+        {% include "menu.html" %}
+
+        <!-- Middle Rail -->
+        <div class="col-9 col-xl-7 col-md-6">
+            <div class="section" >
+                <div class="panel panel--loose panel--raised base-margin-bottom">
+                    <h2 class="subtitle">Edit Device</h2>
+                    <hr>
+                    <form action="/editTableEntry" method="POST"> 
+                        <div class="section"> 
+                                                                                             
+                            <!--CUSTOMIZE: Text field section: Add or remove elements as needed.-->
+                                                           
+                                <!--Name-->
+                                    <div class="form-group base-margin-bottom">
+                                        <div class="form-group__text">
+                                            <input id="name" type="text" required="" value="{{device.name}}" name="deviceName">
+                                            <label for="name">Name</label>
+                                        </div>
+                                        <div class="help-block" role="alert">
+                                            <span>Hint for field</span>
+                                        </div>
+                                    </div>
+
+
+                                 <!--Coverage-->                   
+                                    <div class="subheader">Coverage</div>
+                                    <div class="form-group form-group--inline">
+                                        <label class="radio">
+                                            <input type="radio" {% if device.coverage == "True" %} checked {% endif %} name="radio-inline" value="True">
+                                            <span class="radio__input"></span>
+                                            <span class="radio__label">Yes</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-group form-group--inline">
+                                        <label class="radio">
+                                            <input type="radio" {% if device.coverage == "False" %} checked {% endif %} name="radio-inline" value="False">
+                                            <span class="radio__input"></span>
+                                            <span class="radio__label">No</span>
+                                        </label>
+                                    </div>
+                                    
+
+                                <!--Software type-->
+                                <div class="form-group base-margin-bottom">
+                                    <div class="form-group__text">
+                                        <input id="software" type="text" required="" value="{{device.softwareType}}" name="deviceSoftwareType">
+                                        <label for="software">Software Type</label>
+                                    </div>
+                                    <div class="help-block" role="alert">
+                                        <span>Hint for field</span>
+                                    </div>
+                                </div>
+
+                                <!--Software version-->
+                                <div class="form-group base-margin-bottom">
+                                    <div class="form-group__text">
+                                        <input id="software" type="text" required="" value="{{device.softwareVersion}}" name="deviceSoftwareVersion">
+                                        <label for="software">Software Version</label>
+                                    </div>
+                                    <div class="help-block" role="alert">
+                                        <span>Hint for field</span>
+                                    </div>
+                                </div>
+
+                                <!--Dropdown for role-->
+                                <div class="form-group base-margin-bottom">
+                                        <div class="form-group__text select">
+                                            <select id="input-type-select" name="deviceRole">
+                                                <option value="Access"  {% if device.role == "Access" %} selected="" {% endif %} >Access</option>
+                                                <option value="Distribution" {% if device.role == "Distribution" %} selected="" {% endif %} >Distribution</option>
+                                                <option value="Core" {% if device.role == "Core" %} selected="" {% endif %}>Core</option>
+                                                <option value="Border Router" {% if device.role == "Border Router" %} selected="" {% endif %}>Border Router</option>
+                                            </select>
+                                            <label for="input-type-select">Role</label>
+                                        </div>
+                                        <div class="help-block" role="alert">
+                                            <span>Hint for field</span>
+                                        </div>
+                                    </div>
+                            
+                            <!--CUSTOMIZE END-->
+                        
+                            <!-- Button area-->
+                            <button name="saveEntry" type="submit" class="btn btn--primary" type="submit" onclick="showLoadingText()" onload="showOriginalText('Save')" value="{{device.id}}">Save</button>
+
+                        </div> 
+
+                    </form>
+                    
+                    <!--Alert for error message-->
+                        <!--PASS INFO: Pass the following information to the template: error=True/False ; errormessage="xxx" ; errorcode=xxx-->
+                        {% include "alert.html" %}
+
+                </div>
+            </div>
+        </div>
+
+    <!-- Right Rail -->
+    <div class="col-0 col-xl-3 col-md-3">
+    </div>
+</div>
+{%  endblock %}

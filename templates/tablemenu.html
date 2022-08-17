@@ -1,0 +1,121 @@
+<!-- This table page builds a table based on jinja 2 and a passed json. 
+    Each row offers an "Edit" button that redirects to a setting page for the respective entry.  -->
+    {% extends "masterPage.html" %}
+
+    {% block content %}
+    <div class="row">
+    
+        <!-- Left Rail -->
+        {% include "menu.html" %}
+    
+        <!-- Middle + Right Rail -->
+        <div class="col-9 col-xl-10 col-md-9">
+            <div class="section">
+                <div class="flex-center-vertical">
+                    <h2>Device List
+                        <!--CUSTOMIZE: Add headline of page here-->
+                    </h2>
+                </div>
+    
+                <!--Alert for error message-->
+                <!--PASS INFO: Pass the following information to the template: error=True/False ; errormessage="xxx" ; errorcode=xxx-->
+                {% include "alert.html" %}
+    
+                <form action="/tablemenu" method="POST">
+    
+                    <div class="responsive-table">
+                        <!--CUSTOMIZE: Change table content as needed -->
+                        <table class="table table--lined table--selectable table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <label class="checkbox">
+                                            <input type="checkbox">
+                                            <span class="checkbox__input"></span>
+                                        </label>
+                                    </th>
+                                    <th class="sortable">Device <span class="sort-indicator icon-dropdown"></span></th>
+                                    <th class="text-center">Advisories</th>
+                                    <th class="text-center hidden-xs-down">Coverage</th>
+                                    <th class="hidden-md-down">Software Type</th>
+                                    <th class="hidden-md-down">Software Version</th>
+                                    <th class="hidden-lg-down">Last Scan</th>
+                                    <th class="hidden-lg-down">Role</th>
+                                    <th>Action</th>
+    
+                                </tr>
+                            </thead>
+                            <tbody>
+    
+                                {% for device in devices %}
+                                <tr>
+                                    <td>
+                                        <label class="checkbox">
+                                            <input type="checkbox">
+                                            <span class="checkbox__input"></span>
+                                        </label>
+                                    </td>
+                                    <td>
+    
+                                        {% if device.type == "router" %}
+                                        <span class="icon-router-outline icon-size-20 half-margin-right text-light"></span>
+                                        {% elif device.type == "switch" %}
+                                        <span class="icon-switch-outline icon-size-20 half-margin-right text-light"></span>
+                                        {% elif device.type == "ap" %}
+                                        <span
+                                            class="icon-accesspoint-outline icon-size-20 half-margin-right text-light"></span>
+                                        {% else %}
+                                        <span></span>
+                                        {% endif %}
+    
+                                        <span>{{device.name}}</span>
+    
+                                    </td>
+    
+                                    <td class="text-center">
+                                        {% if device.advisoryCount > 3 %}
+                                        <span class="badge badge--danger">{{device.advisoryCount}}</span>
+                                        {% elif device.advisoryCount > 0 %}
+                                        <span class="badge badge--warning">{{device.advisoryCount}}</span>
+                                        {% endif %}
+                                    </td>
+    
+                                    <td class="text-center hidden-xs-down">
+                                        {% if device.coverage %}
+                                        <span class="icon-check text-success"></span>
+                                        {% endif %}
+                                    </td>
+    
+                                    <td class="hidden-md-down">{{device.softwareType}}</td>
+                                    <td class="hidden-md-down">{{device.softwareVersion}}</td>
+                                    <td class="hidden-lg-down">{{device.lastScan}}</td>
+                                    <td class="hidden-lg-down">{{device.role}}</td>
+                                    <td><button name="editEntry" type="submit" class="btn btn--link"
+                                            style="padding-left:0px;" type="submit" value="{{device.id}}">Edit</button></td>
+    
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!--CUSTOMIZATION END-->
+                    </div>
+                </form>
+                <!--CUSTOMIZE: Change pagination content as needed -->
+                <ul class="pagination pull-right">
+                    <li><a class="disabled" href="javascript:;"><span class="icon-chevron-left-double"></span></a></li>
+                    <li><a class="disabled" href="javascript:;"><span class="icon-chevron-left"></span></a></li>
+                    <li class="active"><a href="javascript:;">1</a></li>
+                    <li><a href="javascript:;">2</a></li>
+                    <li><a href="javascript:;">3</a></li>
+                    <li><a href="javascript:;">4</a></li>
+                    <li><span class="icon-more"></span></li>
+                    <li><a href="javascript:;">16</a></li>
+                    <li><a href="javascript:;"><span class="icon-chevron-right"></span></a></li>
+                    <li><a href="javascript:;"><span class="icon-chevron-right-double"></span></a></li>
+                </ul>
+                <!--CUSTOMIZATION END-->
+            </div>
+        </div>
+    </div>
+    
+    {% endblock %}

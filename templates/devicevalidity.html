@@ -1,0 +1,42 @@
+<!-- This table page builds a table based on jinja 2 and a passed json. 
+    Each row offers an "Edit" button that redirects to a setting page for the respective entry.  -->
+    {% extends "masterPage.html" %}
+
+    {% block content %}
+    <div class="row">
+    
+        <!-- Left Rail -->
+        {% include "menu.html" %}
+    
+        <!-- Middle + Right Rail -->
+        <div class="col-9 col-xl-10 col-md-9">
+            <div class="section">
+                    <div class="flex-center-vertical">
+                    <h2>Device {{device["host-name"]}} validity</h2>
+                    </div>
+            </div>
+    
+                <!--Alert for error message-->
+                <!--PASS INFO: Pass the following information to the template: error=True/False ; errormessage="xxx" ; errorcode=xxx-->
+                {% include "alert.html" %}
+
+                <div class="panel panel--loose panel--raised base-margin-bottom">
+                    <div class="section">
+                        <div class="row">
+                            <h6>Current Validity Status : True</h6>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2">
+                                <button class="btn btn--success">Turn ON</button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn--danger">Turn OFF</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% endblock %}
