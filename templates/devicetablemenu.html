@@ -18,9 +18,6 @@
                 <!--Alert for error message-->
                 <!--PASS INFO: Pass the following information to the template: error=True/False ; errormessage="xxx" ; errorcode=xxx-->
                 {% include "alert.html" %}
-    
-                <form action="/devices" method="POST">
-    
                     <div class="responsive-table">
                         <!--CUSTOMIZE: Change table content as needed -->
                         <table class="table table--lined table--selectable table">
@@ -33,70 +30,47 @@
                                     <th class="hidden-lg-down">Device State</th>
                                     <th class="hidden-lg-down">Validity</th>
                                     <th>Action</th>
-    
                                 </tr>
                             </thead>
                             <tbody>
-    
+                                <form action="/devices" method="POST">
                                 {% for device in devices %}
-                                <tr>
-                                    <td>
-                                        <span class="icon-router-outline icon-size-20 half-margin-right text-light"></span>
-                                        <span></span>
-    
-                                        <span>{{device["host-name"]}}</span>
-    
-                                    </td>
-    
-                                    <td class="text-center">
-                                        <span>{{device["system-ip"]}}</span>
-                                    </td>
-    
-                                    <td class="text-center">
-                                        <span>{{device["site-id"]}}</span>
-                                    </td>
-    
-                                    <td class="hidden-md-down">{{device["reachability"]}}</td>
-                                    <td class="hidden-md-down">{{device["deviceState"]}}</td>
-                                    <td class="hidden-lg-down">{{device["validity"]}}</td>
-                                    <td class="hidden-lg-down">
-                                        <select  name="action" id="input-type-select">
-                                            <option value="deviceDetail">Get Device Details</option>
-                                            <option value="editDeviceVars">Change Device Variables</option>
-                                            <option value="detachTemplate">Detach from Template</option>
-                                            <option value="changeValidity">Change Validity</option>
-                                        </select>
-                                        <input type="hidden" id="deviceId" name="deviceId" value={{device.uuid}}>
-                                        <input type="hidden" id="index" name="index" value={{loop.index}}>
-                                    </td>
-                                    <td class="hidden-lg-down">
-                                        <button name="editEntry{{loop.index}}" type="submit" class="btn btn--link"
-                                                style="padding-left:0px;" type="submit">Submit</button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="icon-router-outline icon-size-20 half-margin-right text-light"></span>
+                                            <span></span>
+                                            <span>{{device["host-name"]}}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span>{{device["system-ip"]}}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span>{{device["site-id"]}}</span>
+                                        </td>
+                                        <td class="hidden-md-down">{{device["reachability"]}}</td>
+                                        <td class="hidden-md-down">{{device["deviceState"]}}</td>
+                                        <td class="hidden-lg-down">{{device["validity"]}}</td>
+                                        <td class="hidden-lg-down">
+                                            <select name="action_{{device.uuid}}">
+                                                <option value="deviceDetail">Get Device Details</option>
+                                                <option value="editDeviceVars">Change Device Variables</option>
+                                                <option value="detachTemplate">Detach from Template</option>
+                                                <option value="changeValidity">Change Validity</option>
+                                            </select>
+                                        </td>
+                                        <td class="hidden-lg-down">
+                                            <button name="editEntry" value="{{device.uuid}}" type="submit" class="btn btn--link"
+                                                    style="padding-left:0px;" type="submit">Submit 
+                                            </button>
+                                        </td>
+                                    </tr>
                                 {% endfor %}
+                                </form>
                             </tbody>
                         </table>
                         <!--CUSTOMIZATION END-->
                     </div>
-                </form>
-                <!--CUSTOMIZE: Change pagination content as needed -->
-                <ul class="pagination pull-right">
-                    <li><a class="disabled" href="javascript:;"><span class="icon-chevron-left-double"></span></a></li>
-                    <li><a class="disabled" href="javascript:;"><span class="icon-chevron-left"></span></a></li>
-                    <li class="active"><a href="javascript:;">1</a></li>
-                    <li><a href="javascript:;">2</a></li>
-                    <li><a href="javascript:;">3</a></li>
-                    <li><a href="javascript:;">4</a></li>
-                    <li><span class="icon-more"></span></li>
-                    <li><a href="javascript:;">16</a></li>
-                    <li><a href="javascript:;"><span class="icon-chevron-right"></span></a></li>
-                    <li><a href="javascript:;"><span class="icon-chevron-right-double"></span></a></li>
-                </ul>
-                <!--CUSTOMIZATION END-->
             </div>
-        </div>
     </div>
     
     {% endblock %}

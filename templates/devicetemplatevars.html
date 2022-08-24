@@ -24,39 +24,35 @@
                 <div class="panel panel--loose panel--raised base-margin-bottom">
                     <div class="section">
                         <div class="panel panel--loose panel--raised base-margin-bottom">
-                            <h2 class="subtitle">Template Selected : {{template_name}}<!--CUSTOMIZE: Add headline of second step here--></h2>
-                            {% for dict_item in device_template_config %}
-                                {% for key, value in dict_item.items() %}
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <h6>{{key}}</h6>
+                            <form action="/template" method="POST">
+                                <input type="hidden" id="device_id" name="device_id" value="{{device["uuid"]}}">
+                                <input type="hidden" id="temp_id" name="temp_id" value="{{template_id}}">
+                                <input type="hidden" id="code" name="code" value="edit">
+                                <h2 class="subtitle">Template Selected : {{template_name}}<!--CUSTOMIZE: Add headline of second step here--></h2>
+                                {% for dict_item in device_template_config %}
+                                    {% for key, value in dict_item.items() %}
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h6>{{key}}</h6>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input name="value" value="{{value}}">
+                                        </div>
+                                        <input name="key" value="{{key}}" hidden>
+                                        <br>
                                     </div>
-                                    <div class="col-md-4">
-                                        <input name="value" value="{{value}}">
-                                    </div>
-                                    <input name="key" value="{{key}}" hidden>
-                                    <br>
-                                </div>
+                                    {% endfor %}
                                 {% endfor %}
-                            {% endfor %}
+                                <div class="row">
+                                    <div class="col-md-8"></div>
+                                    <div class="col-md-8">
+                                        <button name="editEntry" value="{{device.uuid}}" type="submit" class="btn btn--secondary" type="submit">Submit </button>
+                                    </div>
+                                </div>                         
+                            </form>
                         </div>
                 </div>
-                <!--CUSTOMIZE: Change pagination content as needed -->
-                <ul class="pagination pull-right">
-                    <li><a class="disabled" href="javascript:;"><span class="icon-chevron-left-double"></span></a></li>
-                    <li><a class="disabled" href="javascript:;"><span class="icon-chevron-left"></span></a></li>
-                    <li class="active"><a href="javascript:;">1</a></li>
-                    <li><a href="javascript:;">2</a></li>
-                    <li><a href="javascript:;">3</a></li>
-                    <li><a href="javascript:;">4</a></li>
-                    <li><span class="icon-more"></span></li>
-                    <li><a href="javascript:;">16</a></li>
-                    <li><a href="javascript:;"><span class="icon-chevron-right"></span></a></li>
-                    <li><a href="javascript:;"><span class="icon-chevron-right-double"></span></a></li>
-                </ul>
-                <!--CUSTOMIZATION END-->
             </div>
         </div>
-    </div>
-    
+    </div>  
     {% endblock %}

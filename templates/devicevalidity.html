@@ -23,16 +23,23 @@
                 <div class="panel panel--loose panel--raised base-margin-bottom">
                     <div class="section">
                         <div class="row">
-                            <h6>Current Validity Status : True</h6>
+                            <h6>Current Validity Status : {{validity}}</h6>
                         </div>
-                        <div class="row">
-                            <div class="col-md-2">
-                                <button class="btn btn--success">Turn ON</button>
+                        <br>
+                        <form action="/validity" method="POST">
+                            <input type="hidden" id="device_id" name="device_id" value="{{device["uuid"]}}">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <button name="editEntry" value="valid" class="btn btn--success">Valid</button>
+                                </div>
+                                <div class="col-md-2">
+                                    <button name="editEntry" value="invalid" class="btn btn--danger">Invalid</button>
+                                </div>
+                                <div class="col-md-2">
+                                    <button name="editEntry" value="staging" class="btn btn--secondary">Staging</button>
+                                </div>
                             </div>
-                            <div class="col-md-2">
-                                <button class="btn btn--danger">Turn OFF</button>
-                            </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>

@@ -149,6 +149,15 @@ class vManage():
         response = self.session.post(f"{self.base_url}/dataservice/template/feature", headers=headers, data=json.dumps(template_config), verify=False)
         response = json.loads(response.text)
         return response["templateId"]
+    
+    # vManage edit feature template input
+    def edit_feature_template(self, template_id, device_id_list,template_config):
+        headers = {
+            "Content-Type": "application/json"
+        }
+        response = self.session.post(f"{self.base_url}/dataservice/template/feature", headers=headers, data=json.dumps(template_config), verify=False)
+        response = json.loads(response.text)
+        return response["templateId"]
 
     # vManage add feature template
     def add_device_template(self, template_config):
@@ -167,7 +176,7 @@ class vManage():
         payload = {
             "deviceTemplateList": [{
                 "templateId": template_id,
-                "device": template_input_variables,
+                "device": json.dumps(template_input_variables),
                 "isEdited": False,
                 "isMasterEdited": False
             }]
@@ -193,19 +202,25 @@ class vManage():
         return response
 
     # vManage invalidate router certificate
-    def invalidate_certificate(self, chasis_number, serial_number):
+    def change_certificate(self, chasis_number, serial_number,validity):
         headers = {
             "Content-Type": "application/json"
         }
         payload = [{
             "chasisNumber": chasis_number,
             "serialNumber": serial_number,
-            "validity": "invalid"
+            "validity": validity
         }]
         response = self.session.post(f"{self.base_url}/dataservice/certificate/save/vedge/list", headers=headers, data=json.dumps(payload), verify=False)
         response = json.loads(response.text)
         return response
 
+    # vManage sync controllers
+    def sync_controllers(self):
+        response = self.session.post(f"{self.base_url}/dataservice/certificate/vedge/list", verify=False)
+        response = json.loads(response.text)
+        return response
+    
     # vManage sync controllers
     def sync_controllers(self):
         response = self.session.post(f"{self.base_url}/dataservice/certificate/vedge/list", verify=False)
@@ -308,114 +323,195 @@ def devices():
 
         #Find device to edit in devices list and render edit page (include device info) 
         if request.method == 'POST':
-            action =  request.form.get("action")
+            code =  request.form.get("code")
 
+            deviceId = request.form.get("editEntry")
+
+            try:
+                action_string = "action" + "_" + deviceId
+                action = request.form.get(action_string)
+            except:
+                pass
+
+            code =  request.form.get("code")
+            if code == "detach":
+                action = request.form.get("action")
             if action == 'deviceDetail':
-                index =  request.form.get("index")
-                device_string = "editEntry" + str(index)
-                deviceId =  request.form.get("deviceId")
-            
+
                 for device in device_list:
                     if device['uuid'] == deviceId:
                         deviceToEdit = device
 
-                    del deviceToEdit["templateApplyLog"]
-                    del deviceToEdit["vedgeCSR"]
-                    del deviceToEdit["activity"]
-                    del deviceToEdit["availableVersions"]
-
-                    return render_template('device_details.html', hiddenLinks=False,  devices = [deviceToEdit],device = deviceToEdit, timeAndLocation=getSystemTimeAndLocation()) 
+                deviceToEdit.pop("templateApplyLog", None)
+                deviceToEdit.pop("vedgeCSR", None)
+                return render_template('device_details.html', hiddenLinks=False,  devices = [deviceToEdit],device = deviceToEdit, timeAndLocation=getSystemTimeAndLocation()) 
             if action == 'editDeviceVars':
-                index =  request.form.get("index")
-                device_string = "editEntry" + str(index)
-                deviceId =  request.form.get("deviceId")
                 device_templates = vManage(auth).get_device_templates()
                 
                 for device in device_list:
                     if device['uuid'] == deviceId:
                         deviceToEdit = device
 
-                mapping, file = load_mapping(1)
-                all_template_input = {}
-                for row in mapping:
-                    template_name = row["TemplateName"]
-                    template_id = next(device_template["templateId"] for device_template in device_templates if device_template["templateName"] == template_name)
-                    device_chassis_numbers = row["DeviceChassisNumber"].split(",")
-                    device_id_list = [device["uuid"] for device in device_list if device["chasisNumber"] in device_chassis_numbers]
-                    template_input_sets = vManage(auth).get_template_input(template_id, device_id_list)
+                try:
+                    template_id = deviceToEdit['templateId']
+                except:
+                    device_list = vManage(auth).get_device_list()
+                    return render_template('devicetablemenu.html', hiddenLinks=False, devices = device_list, error=True, errormessage="No template attached to this device",timeAndLocation=getSystemTimeAndLocation())
+                for template in device_templates:
+                    if template['templateId'] == template_id:
+                        template_id = template['templateId']
+                        template_name = template['templateName']
+                        
+
+
+                device_id_list = [deviceToEdit['uuid']]
+
+                template_input_sets = vManage(auth).get_template_input(template_id, device_id_list)
+
+                '''
+                for template_input_set in template_input_sets:
+                    template_input_set.pop("csv-status", None)
+                    template_input_set.pop("csv-deviceId", None)
+                    template_input_set.pop("csv-deviceIP", None)
+                    template_input_set.pop("csv-host-name", None)
+                '''
                     
-                    for template_input_set in template_input_sets:
-                        template_input_set.pop("csv-status", None)
-                        template_input_set.pop("csv-deviceId", None)
-                        template_input_set.pop("csv-deviceIP", None)
-                        template_input_set.pop("csv-host-name", None)
-                        write_excel(file, template_name, template_input_sets)
-                
-
-                return render_template('devicetemplatevars.html', hiddenLinks=False,  device = deviceToEdit,device_template_config=template_input_sets,template_name=template_name,timeAndLocation=getSystemTimeAndLocation())   
+                return render_template('devicetemplatevars.html', hiddenLinks=False,  device = deviceToEdit,template_id=template_id,device_template_config=template_input_sets,template_name=template_name,timeAndLocation=getSystemTimeAndLocation())
             if action == 'detachTemplate':
-                index =  request.form.get("index")
-                device_string = "editEntry" + str(index)
-                deviceId =  request.form.get("deviceId")
+                code =  request.form.get("code")
+                if code == "detach":
+                        device_hostname = request.form.get("hostname")
+                        device_list = vManage(auth).get_device_list()
+                        device_details = next(device for device in device_list if "host-name" in device and device["host-name"] == device_hostname)
+                        vManage(auth).detach_template(device_details["deviceType"], device_details["uuid"], device_details["deviceIP"])
                 
+                device_list = vManage(auth).get_device_list()
                 for device in device_list:
                     if device['uuid'] == deviceId:
                         deviceToEdit = device
+                try:
+                    template_name = deviceToEdit['template']
+                except:
+                    template_name = 'No template attached'
+                    device_list = vManage(auth).get_device_list()
+                    return render_template('devicetablemenu.html', hiddenLinks=False, devices = device_list, error=True, errormessage="No template attached to this device",timeAndLocation=getSystemTimeAndLocation())
                 
-                    return render_template('devicedetach.html', hiddenLinks=False,  device = deviceToEdit, timeAndLocation=getSystemTimeAndLocation())   
+                try: 
+                    template_status = deviceToEdit['templateStatus']
+                except:
+                    template_status = 'N/A'
+                    device_list = vManage(auth).get_device_list()
+                    return render_template('devicetablemenu.html', hiddenLinks=False, error=True,template_name=template_name,errormessage="No template attached to this device",template_status=template_status, device = deviceToEdit, timeAndLocation=getSystemTimeAndLocation())   
+
+                return render_template('devicedetach.html', hiddenLinks=False, template_name=template_name, template_status=template_status, device = deviceToEdit, timeAndLocation=getSystemTimeAndLocation())   
             if action == 'changeValidity':
-                index =  request.form.get("index")
-                device_string = "editEntry" + str(index)
-                deviceId =  request.form.get("deviceId")
-                
                 for device in device_list:
                     if device['uuid'] == deviceId:
                         deviceToEdit = device
                 
-                    return render_template('devicevalidity.html', hiddenLinks=False,  device = deviceToEdit, timeAndLocation=getSystemTimeAndLocation())   
+                validity = deviceToEdit['validity']
+                return render_template('devicevalidity.html', hiddenLinks=False,  validity=validity, device = deviceToEdit, timeAndLocation=getSystemTimeAndLocation())   
 
 
     except Exception as e: 
         print(e)  
         #OR the following to show error message 
-        return render_template('tablemenu.html', error=True, devices = devices, errormessage="CUSTOMIZE: Add custom message here.", errorcode=e, timeAndLocation=getSystemTimeAndLocation())
+        return render_template('devicetablemenu.html', error=True, devices = devices, errormessage="CUSTOMIZE: Add custom message here.", errorcode=e, timeAndLocation=getSystemTimeAndLocation())
 
-#Edit page for table entry
-@app.route('/editTableEntry', methods=['GET', 'POST'])
-def editTableEntry():
-    try:
-        if request.method == 'POST':
-            
-            #Retrieve devices list from json file
-            devices = getJson("devices.json")
+@app.route('/validity', methods=['POST'])
+def validity():
+    validity = request.form.get("editEntry")
 
-            #Submitted form values:
-            deviceId = request.form.get("saveEntry")
-            deviceName = request.form.get("deviceName")
-            deviceCoverage = request.form.get("radio-inline")
-            deviceSoftwareType = request.form.get("deviceSoftwareType")
-            deviceSoftwareVersion = request.form.get("deviceSoftwareVersion")
-            deviceRole = request.form.get("deviceRole")
-       
-            #Find device to edit in devices list and change the values according to the submitted user input
-            for device in devices:
-                if device['id'] == deviceId:
-                    device['name'] = deviceName
-                    device['coverage'] = deviceCoverage
-                    device['softwareType'] = deviceSoftwareType
-                    device['softwareVersion'] = deviceSoftwareVersion
-                    device['role'] = deviceRole
+    auth = vManage(None).authentication()
+    device_list = vManage(auth).get_device_list()
 
-            #Write updated devices info to json file
-            writeJson("devices.json", devices)
+    deviceToEdit = {}
 
-            #Redirect to table view
-            return redirect(url_for('tablemenu'))
+    deviceId = request.form.get("device_id")
 
-    except Exception as e: 
-        print(e)  
-        #OR the following to show error message 
-        return render_template('editTableEntry.html', error=True, errormessage="CUSTOMIZE: Add custom message here.", errorcode=e, timeAndLocation=getSystemTimeAndLocation())
+    for device in device_list:
+                    if device['uuid'] == deviceId:
+                        deviceToEdit = device
+
+    resp = vManage(auth).change_certificate(chasis_number=deviceToEdit['chasisNumber'],serial_number=deviceToEdit['serialNumber'],validity=validity)
+
+    device_list = vManage(auth).get_device_list()
+
+    deviceToEdit = {}
+
+    deviceId = request.form.get("device_id")
+
+    for device in device_list:
+                    if device['uuid'] == deviceId:
+                        deviceToEdit = device
+
+    return render_template('devicevalidity.html', hiddenLinks=False,  validity=validity, device = deviceToEdit, timeAndLocation=getSystemTimeAndLocation())   
+
+@app.route('/template', methods=['POST'])
+def template():
+
+    code =  request.form.get("code")
+
+    if code == "edit":
+        temp_id =  request.form.get("temp_id")
+        device_id =  request.form.get("device_id")   
+        keys = request.form.getlist("key")
+        values = request.form.getlist("value")
+
+        template_config = {}
+
+        for key,value in zip(keys,values):
+            template_config[key] = str(value)
+
+
+        payload = {
+                "deviceTemplateList": [
+                    {
+                    "templateId": temp_id,
+                    "device": [template_config],
+                    "isEdited": False,
+                    "isMasterEdited": False,
+                    "isDraftDisabled": False
+                    }
+                ]
+            }
+
+        auth = vManage(None).authentication()
+        vManage(auth).attach_template(temp_id, template_config)
+        deviceId = device_id
+
+    auth = vManage(None).authentication()
+    #device_templates = vManage(auth).get_device_templates()
+    device_list = vManage(auth).get_device_list()
+
+    deviceToEdit = {}
+    device_templates = vManage(auth).get_device_templates()
+
+    deviceId = request.form.get("editEntry")
+
+    for device in device_list:
+        if device['uuid'] == deviceId:
+            deviceToEdit = device
+
+    for template in device_templates:
+        if template['templateId'] == deviceToEdit['templateId']:
+            template_id = template['templateId']
+            template_name = template['templateName']
+
+
+    device_id_list = [deviceToEdit['uuid']]
+
+    template_input_sets = vManage(auth).get_template_input(template_id, device_id_list)
+
+    '''    
+    for template_input_set in template_input_sets:
+        template_input_set.pop("csv-status", None)
+        template_input_set.pop("csv-deviceId", None)
+        template_input_set.pop("csv-deviceIP", None)
+        template_input_set.pop("csv-host-name", None)
+    '''
+
+    return render_template('devicetemplatevars.html', hiddenLinks=False,  device = deviceToEdit,device_template_config=template_input_sets,template_name=template_name,timeAndLocation=getSystemTimeAndLocation())
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
